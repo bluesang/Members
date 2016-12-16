@@ -12,6 +12,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import spms.dao.MemberDao;
+
 // 오류 처리 JSP 적용  
 @WebServlet("/member/delete")
 public class MemberDeleteServlet extends HttpServlet {
@@ -21,16 +23,16 @@ public class MemberDeleteServlet extends HttpServlet {
 	public void doGet(
 			HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
-		Connection conn = null;
-		Statement stmt = null;
-
+		int memberCount = 0;		
 		try {
 			ServletContext sc = this.getServletContext();
-			conn = (Connection) sc.getAttribute("conn");   
-			stmt = conn.createStatement();
-			stmt.executeUpdate(
-					"DELETE FROM MEMBERS WHERE MNO=" + 
-					request.getParameter("no"));
+			Connection servletConn = (Connection) sc.getAttribute("conn");   
+			
+			MemberDao memberDao = new MemberDao();
+			memberDao.setConn(servletConn);
+			
+			int no = Integer.parseInt(request.getParameter("no"));
+			memberCount = memberDao.delete(no);
 			
 			response.sendRedirect("list");
 			
@@ -41,7 +43,7 @@ public class MemberDeleteServlet extends HttpServlet {
 			rd.forward(request, response);
 			
 		} finally {
-			try {if (stmt != null) stmt.close();} catch(Exception e) {}
+			
 			//try {if (conn != null) conn.close();} catch(Exception e) {}
 		}
 
